@@ -1,0 +1,38 @@
+version: "3"
+services:
+  frontend-react:
+    build:
+      context: ./frontend/
+    command: npm start
+    volumes:
+      - ./frontend/:/usr/app
+      - /usr/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - "VIRTUAL_HOST=${tag}.react.ruetech.net"
+      - VIRTUAL_PORT=3000
+
+  backend-odoo:
+    restart: always
+    image: odoo:12
+    tty: true
+    stdin_open: true
+    command: "-- --dev=reload --db-filter=${tag}"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./backend/config:/etc/odoo
+      - ./backend/addons:/mnt/extra-addons
+    environment:
+      - "VIRTUAL_HOST=${tag}.odoo.ruetech.net"
+      - VIRTUAL_PORT=8069
+  
+volumes:
+  node-modules:
+  odoo-web-data:
+
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
